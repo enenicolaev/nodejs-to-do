@@ -14,13 +14,18 @@ new Vue({
       if (!title) {
         return
       }
-      this.todos.push({
-        title: title,
-        id: Math.random(),
-        done: false,
-        date: new Date()
+
+      fetch('/api/todo', {
+        method: 'post',
+        body: JSON.stringify({ title }),
+        headers: {'Content-Type': 'application/json'}
       })
-      this.todoTitle = ''
+        .then((res) => res.json())
+        .then((res) => {
+          this.todos.push(res.todo)
+          this.todoTitle = ''
+        })
+        .catch((err) => console.log(err))
     },
     removeTodo(id) {
       this.todos = this.todos.filter(t => t.id !== id)
@@ -28,9 +33,13 @@ new Vue({
   },
   filters: {
     capitalize(value) {
-      return value.toString().charAt(0).toUpperCase() + value.slice(1)
+      return String(value).charAt(0).toUpperCase() + String(value).slice(1)
     },
     date(value) {
+      if (!value) {
+        return ''
+      }
+
       return new Intl.DateTimeFormat('ru-RU', {
         year: 'numeric',
         month: 'long',
